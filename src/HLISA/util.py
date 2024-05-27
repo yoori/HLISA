@@ -155,25 +155,38 @@ def best_effort_element_selection(webdriver, element):
         candidates = webdriver.execute_script(script, element)
         return candidates
 
+def set_driver_cursor_coordinates(driver, x, y):
+    driver.HL_cursor_coordinates_x = x
+    driver.HL_cursor_coordinates_y = y
+
 # Use the coordinate information from the Selenium 
 # MoveTargetOutOfBoundsException to get the coordinates
 # of the Selenium mouse cursor.
 def get_cursor_coordinates(driver):
+    if hasattr(driver, 'HL_use_cursor_coordinates_in_driver') and hasattr(driver, 'HL_cursor_coordinates_x') :
+        return (driver.HL_cursor_coordinates_x, driver.HL_cursor_coordinates_y)
     MOVE_PIXELS = 30000
     try:
         ac = ActionChains(driver)
         ac.move_by_offset(MOVE_PIXELS, MOVE_PIXELS)
         ac.perform()
     except MoveTargetOutOfBoundsException as ex:
-        error_message = str(ex)[10:23]
-        x = error_message[0:5]
-        y = error_message[7:12]
-        try:
-            x = int(x)
-            y = int(y)
-        except Exception as e:
-            raise NoCursorCoordinatesException() # If the coordinates are not integers, something went wrong
-        if x < 0 or y < 0:
-            raise NoCursorCoordinatesException()
-        return (x - MOVE_PIXELS, y - MOVE_PIXELS)
+        if str(ex).startswith("Message: move target out of bounds") :
+            driver.HL_use_cursor_coordinates_in_driver = True
+            if hasattr(driver, 'HL_cursor_coordinates_x') :
+                return (driver.HL_cursor_coordinates_x, driver.HL_cursor_coordinates_y)
+            else :
+                return (0, 0)
+        else:
+            error_message = str(ex)[10:23]
+            x = error_message[0:5]
+            y = error_message[7:12]
+            try:
+                x = int(x)
+                y = int(y)
+            except Exception as e:
+                raise NoCursorCoordinatesException() # If the coordinates are not integers, something went wrong
+            if x < 0 or y < 0:
+                raise NoCursorCoordinatesException()
+            return (x - MOVE_PIXELS, y - MOVE_PIXELS)
     raise NoCursorCoordinatesException() # If no exception occured, something went wrong

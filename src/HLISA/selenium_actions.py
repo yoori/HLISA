@@ -15,6 +15,7 @@ from HLISA.util import (behavorial_element_coordinates,
                         increaseMousemovementSpeed,
                         std_positive,
                         get_cursor_coordinates,
+                        set_driver_cursor_coordinates,
                         scale_delay_kwargs)
 from HLISA.errors import (HLISAException,
                           OutOfViewportException)
@@ -212,6 +213,7 @@ class HL_Selenium_Actions:
     #   y: y-coordinate to move to
     def move_to(self, x, y, addDelayAfter=True):
         t_cursor = TheoreticalCursor(x, y, self.webdriver, self.actions)
+        set_driver_cursor_coordinates(self.webdriver, x, y)
         if addDelayAfter:
             self.addDelayAfterAction()
         return self
