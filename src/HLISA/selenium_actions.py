@@ -9,6 +9,7 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import MoveTargetOutOfBoundsException
+from selenium.webdriver.common.keys import Keys
 
 from HLISA.util import (behavorial_element_coordinates,
                         get_current_scrolling_position,
@@ -255,9 +256,12 @@ class HL_Selenium_Actions:
         if character.isupper() or character in special_characters:
             self.actions.key_down("\ue008")
             self.actions.pause(std_positive(**CHARACTER_SHIFT_DOWN_DELAY_KWARGS)) # Time after shift press
-        self.actions.key_down(character)
-        self.actions.pause(std_positive(**CHARACTER_DWELL_DELAY_KWARGS)) # Dwell time
-        self.actions.key_up(character)
+        if character != '\n':
+            self.actions.key_down(character)
+            self.actions.pause(std_positive(**CHARACTER_DWELL_DELAY_KWARGS)) # Dwell time
+            self.actions.key_up(character)
+        else :
+            self.actions.send_keys(Keys.ENTER)
         if character.isupper() or character in special_characters:
             self.actions.pause(std_positive(**CHARACTER_SHIFT_UP_DELAY_KWARGS)) # Time before shift release
             self.actions.key_up("\ue008")
